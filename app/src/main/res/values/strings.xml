@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">Notes App</string>
+    <string name="date">Date</string>
+    <string name="title">Title</string>
+    <string name="desc">Description</string>
+    <string name="submit">Submit</string>
+    <string name="delete">Delete</string>
+    <string name="change">Change</string>
+    <string name="update">Update</string>
+    <string name="add">Add</string>
+    <string name="empty_message">Field cannot be empty</string>
+    <string name="error_update_message">Note gagal diperbarui</string>
+    <string name="error_add_message">Gagal menambahkan data</string>
+    <string name="question_cancel">Apakah anda ingin membatalkan perubahan?</string>
+    <string name="cancel">Batal</string>
+    <string name="question_delete">Apakah anda yakin untuk mengapus note ini?</string>
+    <string name="no">Tidak</string>
+    <string name="yes">Ya</string>
+    <string name="error_delete_message">Gagal menghapus note</string>
+    <string name="note">Note</string>
+    <string name="success_add_message">Satu note berhasil ditambahkan</string>
+    <string name="success_delete_message">Berhasil menghapus 1 note</string>
+    <string name="success_update_message">Sukses merubah 1 note</string>
+</resources>
