@@ -1,11 +1,16 @@
 package com.bayuirfan.notesapp.features;
 
+import android.content.Context;
 import android.content.Intent;
+import android.database.ContentObserver;
+import android.database.Cursor;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -13,26 +18,26 @@ import android.widget.ProgressBar;
 
 import com.bayuirfan.notesapp.R;
 import com.bayuirfan.notesapp.adapter.NoteAdapter;
-import com.bayuirfan.notesapp.database.NoteHelper;
 import com.bayuirfan.notesapp.model.Note;
 import com.bayuirfan.notesapp.utils.LoadNotesAsync;
 import com.bayuirfan.notesapp.utils.LoadNotesCallback;
 
 import java.util.ArrayList;
 
+import static com.bayuirfan.notesapp.database.DatabaseContract.NoteColumns.CONTENT_URI;
 import static com.bayuirfan.notesapp.features.NoteAddUpdateActivity.EXTRA_NOTE;
 import static com.bayuirfan.notesapp.features.NoteAddUpdateActivity.EXTRA_POSITION;
 import static com.bayuirfan.notesapp.features.NoteAddUpdateActivity.REQUEST_ADD;
 import static com.bayuirfan.notesapp.features.NoteAddUpdateActivity.RESULT_ADD;
 import static com.bayuirfan.notesapp.features.NoteAddUpdateActivity.RESULT_DELETE;
 import static com.bayuirfan.notesapp.features.NoteAddUpdateActivity.RESULT_UPDATE;
+import static com.bayuirfan.notesapp.utils.helper.MappingHelper.mapCursorToArrayList;
 
 public class MainActivity extends AppCompatActivity implements LoadNotesCallback, View.OnClickListener {
     private ProgressBar progressBar;
     private RecyclerView rvMain;
     private static final String EXTRA_STATE = "extra_state";
     private NoteAdapter noteAdapter;
-    private NoteHelper noteHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,14 +53,17 @@ public class MainActivity extends AppCompatActivity implements LoadNotesCallback
 
         rvMain.setLayoutManager(new LinearLayoutManager(this));
         rvMain.setHasFixedSize(true);
-
-        noteHelper = NoteHelper.getInstance(this.getApplicationContext());
-        noteHelper.open();
-
         fabAdd.setOnClickListener(this);
 
         noteAdapter = new NoteAdapter(this);
         rvMain.setAdapter(noteAdapter);
+
+        HandlerThread handlerThread = new HandlerThread("DataObserver");
+        handlerThread.start();
+        Handler handler = new Handler(handlerThread.getLooper());
+
+        DataObserver observer = new DataObserver(handler, this);
+        getContentResolver().registerContentObserver(CONTENT_URI, true, observer);
 
         if (savedInstanceState == null){
             loadData();
@@ -67,14 +75,9 @@ public class MainActivity extends AppCompatActivity implements LoadNotesCallback
         }
     }
 
-    private void loadData(){
-        new LoadNotesAsync(noteHelper, this).execute();
-    }
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        noteHelper.close();
     }
 
     @Override
@@ -97,9 +100,15 @@ public class MainActivity extends AppCompatActivity implements LoadNotesCallback
     }
 
     @Override
-    public void postExecute(ArrayList<Note> noteArrayList) {
+    public void postExecute(Cursor cursor) {
         progressBar.setVisibility(View.GONE);
-        noteAdapter.setListNotes(noteArrayList);
+        ArrayList<Note> listNotes = mapCursorToArrayList(cursor);
+        if (listNotes.size() > 0){
+            noteAdapter.setListNotes(listNotes);
+        } else {
+            noteAdapter.setListNotes(new ArrayList<>());
+            showSnackbarMessage(getResources().getString(R.string.empty));
+        }
     }
 
     @Override
@@ -135,7 +144,31 @@ public class MainActivity extends AppCompatActivity implements LoadNotesCallback
         loadData();
     }
 
+    protected void loadData(){
+        new LoadNotesAsync(this, this).execute();
+    }
+
     private void showSnackbarMessage(String message){
         Snackbar.make(this.rvMain, message, Snackbar.LENGTH_SHORT).show();
+    }
+
+    public static class DataObserver extends ContentObserver{
+
+        final Context context;
+        /**
+         * Creates a content observer.
+         *
+         * @param handler The handler to run {@link #onChange} on, or null if none.
+         */
+        public DataObserver(Handler handler, Context context) {
+            super(handler);
+            this.context = context;
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            super.onChange(selfChange);
+            new LoadNotesAsync(context, (LoadNotesCallback) context).execute();
+        }
     }
 }

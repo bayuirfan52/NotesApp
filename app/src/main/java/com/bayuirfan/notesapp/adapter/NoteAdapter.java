@@ -2,6 +2,7 @@ package com.bayuirfan.notesapp.adapter;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -17,6 +18,7 @@ import com.bayuirfan.notesapp.utils.CustomOnClickListener;
 
 import java.util.ArrayList;
 
+import static com.bayuirfan.notesapp.database.DatabaseContract.NoteColumns.CONTENT_URI;
 import static com.bayuirfan.notesapp.features.NoteAddUpdateActivity.EXTRA_NOTE;
 import static com.bayuirfan.notesapp.features.NoteAddUpdateActivity.EXTRA_POSITION;
 
@@ -68,6 +70,9 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
         holder.tvDate.setText(noteArrayList.get(i).getDate());
         holder.itemCardView.setOnClickListener(new CustomOnClickListener(i, (view, position) -> {
             Intent intent = new Intent(activity, NoteAddUpdateActivity.class);
+
+            Uri uri = Uri.parse(CONTENT_URI + "/" + getListNotes().get(position).getId());
+            intent.setData(uri);
             intent.putExtra(EXTRA_NOTE, noteArrayList.get(position));
             intent.putExtra(EXTRA_POSITION, position);
             activity.startActivityForResult(intent, NoteAddUpdateActivity.REQUEST_UPDATE);

@@ -14,8 +14,8 @@ import java.util.ArrayList;
 import static com.bayuirfan.notesapp.database.DatabaseContract.NoteColumns.DATE;
 import static com.bayuirfan.notesapp.database.DatabaseContract.NoteColumns.DESC;
 import static com.bayuirfan.notesapp.database.DatabaseContract.NoteColumns.TITLE;
-import static com.bayuirfan.notesapp.database.DatabaseContract.TABLE_NOTE;
 import static com.bayuirfan.notesapp.database.DatabaseContract.NoteColumns._ID;
+import static com.bayuirfan.notesapp.database.DatabaseContract.TABLE_NOTE;
 
 public class NoteHelper {
     private static DatabaseHelper databaseHelper;
@@ -100,5 +100,37 @@ public class NoteHelper {
 
     public int deleteNote(int id){
         return database.delete(TABLE_NOTE, _ID + " = '" + id + "'", null);
+    }
+
+    public Cursor queryByIdProvider(String id){
+        return database.query(TABLE_NOTE, null,
+                _ID + " = ?",
+                new String[]{id},
+                null,
+                null,
+                null,
+                null);
+    }
+
+    public Cursor queryProvider(){
+        return database.query(TABLE_NOTE,
+                null,
+                null,
+                null,
+                null,
+                null,
+                _ID + " ASC");
+    }
+
+    public long insertProvider(ContentValues values){
+        return database.insert(TABLE_NOTE, null, values);
+    }
+
+    public int updateProvider(String id, ContentValues values){
+        return database.update(TABLE_NOTE, values, _ID + " = ?", new String[]{id});
+    }
+
+    public int deleteProvider(String id){
+        return database.delete(TABLE_NOTE, _ID + " = ?", new String[]{id});
     }
 }

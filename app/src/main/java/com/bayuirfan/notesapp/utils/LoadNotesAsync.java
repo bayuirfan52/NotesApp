@@ -1,21 +1,23 @@
 package com.bayuirfan.notesapp.utils;
 
+import android.content.Context;
+import android.database.Cursor;
 import android.os.AsyncTask;
 
-import com.bayuirfan.notesapp.database.NoteHelper;
-import com.bayuirfan.notesapp.model.Note;
-
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 
-public class LoadNotesAsync extends AsyncTask<Void, Void, ArrayList<Note>> {
-    private final WeakReference<NoteHelper> weakNoteHelper;
+import static com.bayuirfan.notesapp.database.DatabaseContract.NoteColumns.CONTENT_URI;
+
+public class LoadNotesAsync extends AsyncTask<Void, Void, Cursor> {
+    private final WeakReference<Context> weakContext;
     private final WeakReference<LoadNotesCallback> weakNotesCallback;
 
-    public LoadNotesAsync(NoteHelper noteHelper, LoadNotesCallback loadNotesCallback){
-        weakNoteHelper = new WeakReference<>(noteHelper);
+    public LoadNotesAsync(Context context, LoadNotesCallback loadNotesCallback){
+        weakContext = new WeakReference<>(context);
         weakNotesCallback = new WeakReference<>(loadNotesCallback);
     }
+
+
 
     @Override
     protected void onPreExecute() {
@@ -24,13 +26,14 @@ public class LoadNotesAsync extends AsyncTask<Void, Void, ArrayList<Note>> {
     }
 
     @Override
-    protected ArrayList<Note> doInBackground(Void... voids) {
-        return weakNoteHelper.get().getAllNotes();
+    protected Cursor doInBackground(Void... voids) {
+        Context context = weakContext.get();
+        return context.getContentResolver().query(CONTENT_URI, null,null,null,null);
     }
 
     @Override
-    protected void onPostExecute(ArrayList<Note> noteArrayList) {
-        super.onPostExecute(noteArrayList);
-        weakNotesCallback.get().postExecute(noteArrayList);
+    protected void onPostExecute(Cursor cursor) {
+        super.onPostExecute(cursor);
+        weakNotesCallback.get().postExecute(cursor);
     }
 }

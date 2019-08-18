@@ -1,13 +1,37 @@
 package com.bayuirfan.notesapp.model;
 
+import android.database.Cursor;
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import static com.bayuirfan.notesapp.database.DatabaseContract.NoteColumns.DATE;
+import static com.bayuirfan.notesapp.database.DatabaseContract.NoteColumns.DESC;
+import static com.bayuirfan.notesapp.database.DatabaseContract.NoteColumns.TITLE;
+import static com.bayuirfan.notesapp.database.DatabaseContract.NoteColumns._ID;
+import static com.bayuirfan.notesapp.database.DatabaseContract.getColumnInt;
+import static com.bayuirfan.notesapp.database.DatabaseContract.getColumnString;
 
 public class Note implements Parcelable {
     private int id;
     private String title;
     private String description;
     private String date;
+
+    public Note() {}
+
+    public Note(int id, String title, String description, String date) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.date = date;
+    }
+
+    public Note(Cursor cursor){
+        this.id = getColumnInt(cursor, _ID);
+        this.title = getColumnString(cursor, TITLE);
+        this.description = getColumnString(cursor, DESC);
+        this.date = getColumnString(cursor, DATE);
+    }
 
     public int getId() {
         return id;
@@ -53,9 +77,6 @@ public class Note implements Parcelable {
         dest.writeString(this.title);
         dest.writeString(this.description);
         dest.writeString(this.date);
-    }
-
-    public Note() {
     }
 
     private Note(Parcel in) {
